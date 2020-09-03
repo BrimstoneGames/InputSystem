@@ -9,47 +9,35 @@ namespace UnityEngine.InputSystem.Utilities
 {
     public class OldInputCompatibility
     {
-        private static Input.StateWrapper GetStateWrapper(string name)
-        {
-            if (Input.axes.TryGetValue(name, out Input.StateWrapper wrapper))
-                return wrapper;
-            var newWrapper = new Input.StateWrapper();
-            Input.axes[name] = newWrapper;
-            return newWrapper;
-        }
-
         private class ActionWrapper
         {
             public InputAction action { get; }
+
+            public bool isPressed { get; private set; }
+
+            private uint lastCanceledInUpdate;
+
+            public bool cancelled => (lastCanceledInUpdate != 0) &&
+                                     (lastCanceledInUpdate == InputUpdate.s_UpdateStepCount);
 
             public ActionWrapper(string name)
             {
                 action = new InputAction(name);
                 action.started += c =>
                 {
-                    var wrapper = GetStateWrapper(action.name);
-                    wrapper.isPressed = true;
+                    isPressed = true;
                     //Debug.Log($"action {action.name} started at {Time.frameCount}");
                 };
                 action.canceled += c =>
                 {
-                    var wrapper = GetStateWrapper(action.name);
-                    wrapper.isPressed = false;
-                    wrapper.lastCanceledInUpdate = InputUpdate.s_UpdateStepCount;
+                    isPressed = false;
+                    lastCanceledInUpdate = InputUpdate.s_UpdateStepCount;
                     //Debug.Log($"action {action.name} canceled at {Time.frameCount}");
                 };
                 action.performed += c =>
                 {
                     //Debug.Log($"action {action.name} performed at {Time.frameCount}");
                 };
-            }
-
-            public void OnUpdate()
-            {
-                var wrapper = GetStateWrapper(action.name);
-                wrapper.axis = action.ReadValue<float>();
-                wrapper.isUp = (wrapper.lastCanceledInUpdate != 0) && (wrapper.lastCanceledInUpdate == InputUpdate.s_UpdateStepCount);
-                wrapper.isDown = action.triggered;
             }
         };
 
@@ -62,6 +50,37 @@ namespace UnityEngine.InputSystem.Utilities
         };
 
         private static IDictionary<string, ActionWrapper> axes = new Dictionary<string, ActionWrapper>();
+
+        // public class StateWrapper
+        // {
+        //     public float axis;
+        //     public bool isUp;
+        //     public bool isDown;
+        //     public bool isPressed;
+        //     public uint lastCanceledInUpdate;
+        // };
+        //
+        // public static IDictionary<string, StateWrapper> axes = new Dictionary<string, StateWrapper>();
+
+        public static float GetAxis(string name)
+        {
+            return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.action.ReadValue<float>() : 0.0f;
+        }
+
+        public static bool GetButton(string name)
+        {
+            return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.isPressed : false;
+        }
+
+        public static bool GetButtonDown(string name)
+        {
+            return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.action.triggered : false;
+        }
+
+        public static bool GetButtonUp(string name)
+        {
+            return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.cancelled : false;
+        }
 
         private static string RemapButtons(string name)
         {
@@ -180,6 +199,11 @@ namespace UnityEngine.InputSystem.Utilities
             foreach (SerializedProperty axesSetting in axesSettings)
             foreach (SerializedProperty axisSettings in axesSetting)
                 ConsumeInputManagerAxisSettings(axisSettings);
+
+            Input.GetAxisCallback = GetAxis;
+            Input.GetButtonCallback = GetButton;
+            Input.GetButtonDownCallback = GetButtonDown;
+            Input.GetButtonUpCallback = GetButtonUp;
         }
 
         public static void Enable()
@@ -196,8 +220,6 @@ namespace UnityEngine.InputSystem.Utilities
 
         public static void OnUpdate()
         {
-            foreach (var pair in axes)
-                pair.Value.OnUpdate();
         }
     }
 }

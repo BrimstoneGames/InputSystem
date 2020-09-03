@@ -438,17 +438,6 @@ namespace UnityEngine
 
     public class Input
     {
-        public class StateWrapper
-        {
-            public float axis;
-            public bool isUp;
-            public bool isDown;
-            public bool isPressed;
-            public uint lastCanceledInUpdate;
-        };
-
-        public static IDictionary<string, StateWrapper> axes = new Dictionary<string, StateWrapper>();
-
         private static bool GetKeyInt(KeyCode key)
         {
             return false;
@@ -479,39 +468,34 @@ namespace UnityEngine
             return false;
         }
 
+        public static Func<string, float> GetAxisCallback;
+        public static Func<string, bool> GetButtonCallback;
+        public static Func<string, bool> GetButtonDownCallback;
+        public static Func<string, bool> GetButtonUpCallback;
+
         public static float GetAxis(string axisName)
         {
-            if (axes.TryGetValue(axisName, out StateWrapper wrapper))
-                return wrapper.axis;
-            return 0.0f;
+            return GetAxisCallback(axisName);
         }
 
         public static float GetAxisRaw(string axisName)
         {
-            if (axes.TryGetValue(axisName, out StateWrapper wrapper))
-                return wrapper.axis;
-            return 0.0f;
+            return GetAxisCallback(axisName);
         }
 
         public static bool GetButton(string buttonName)
         {
-            if (axes.TryGetValue(buttonName, out StateWrapper wrapper))
-                return wrapper.isPressed;
-            return false;
+            return GetButtonCallback(buttonName);
         }
 
         public static bool GetButtonDown(string buttonName)
         {
-            if (axes.TryGetValue(buttonName, out StateWrapper wrapper))
-                return wrapper.isDown;
-            return false;
+            return GetButtonDownCallback(buttonName);
         }
 
         public static bool GetButtonUp(string buttonName)
         {
-            if (axes.TryGetValue(buttonName, out StateWrapper wrapper))
-                return wrapper.isUp;
-            return false;
+            return GetButtonUpCallback(buttonName);
         }
 
         public static bool GetMouseButton(int button)
