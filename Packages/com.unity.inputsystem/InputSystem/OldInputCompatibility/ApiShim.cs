@@ -444,6 +444,7 @@ namespace UnityEngine
             public bool isUp;
             public bool isDown;
             public bool isPressed;
+            public uint lastCanceledInUpdate;
         };
 
         public static IDictionary<string, StateWrapper> axes = new Dictionary<string, StateWrapper>();

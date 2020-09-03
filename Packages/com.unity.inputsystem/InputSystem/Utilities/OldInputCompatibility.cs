@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace UnityEngine.InputSystem.Utilities
 {
@@ -27,14 +28,19 @@ namespace UnityEngine.InputSystem.Utilities
                 action.started += c =>
                 {
                     var wrapper = GetStateWrapper(action.name);
-                    wrapper.isDown = true;
                     wrapper.isPressed = true;
+                    //Debug.Log($"action {action.name} started at {Time.frameCount}");
                 };
                 action.canceled += c =>
                 {
                     var wrapper = GetStateWrapper(action.name);
                     wrapper.isPressed = false;
-                    wrapper.isUp = true;
+                    wrapper.lastCanceledInUpdate = InputUpdate.s_UpdateStepCount;
+                    //Debug.Log($"action {action.name} canceled at {Time.frameCount}");
+                };
+                action.performed += c =>
+                {
+                    //Debug.Log($"action {action.name} performed at {Time.frameCount}");
                 };
             }
 
@@ -42,8 +48,8 @@ namespace UnityEngine.InputSystem.Utilities
             {
                 var wrapper = GetStateWrapper(action.name);
                 wrapper.axis = action.ReadValue<float>();
-                wrapper.isUp = false; // TODO this is completely wrong
-                wrapper.isDown = false;
+                wrapper.isUp = (wrapper.lastCanceledInUpdate != 0) && (wrapper.lastCanceledInUpdate == InputUpdate.s_UpdateStepCount);
+                wrapper.isDown = action.triggered;
             }
         };
 
