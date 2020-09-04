@@ -158,6 +158,23 @@ namespace UnityEngine.InputSystem.Utilities
                 case 2: // joystick
                     Debug.Log($"joystick {joyNum} axis {axisValue}");
                     // TODO completely not clear how to combine/split two axes with a 2d controller?
+
+                    switch (axisValue)
+                    {
+                        case 0:
+                            wrap.action.AddBinding("<Gamepad>/leftStick/x");
+                            break;
+                        case 1:
+                            wrap.action.AddBinding("<Gamepad>/leftStick/y");
+                            break;
+                        case 2:
+                            wrap.action.AddBinding("<Gamepad>/rightStick/x");
+                            break;
+                        case 3:
+                            wrap.action.AddBinding("<Gamepad>/rightStick/y");
+                            break;
+                    }
+
                     break;
             }
 
