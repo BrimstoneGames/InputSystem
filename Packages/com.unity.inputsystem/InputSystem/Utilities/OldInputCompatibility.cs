@@ -13,8 +13,10 @@ namespace UnityEngine.InputSystem.Utilities
         {
             public InputAction action { get; }
 
+            // TODO is InputAction.phase is identical to this?
             public bool isPressed { get; private set; }
 
+            // TODO should this be moved to InputAction?
             private uint lastCanceledInUpdate;
 
             public bool cancelled => (lastCanceledInUpdate != 0) &&
@@ -51,17 +53,6 @@ namespace UnityEngine.InputSystem.Utilities
 
         private static IDictionary<string, ActionWrapper> axes = new Dictionary<string, ActionWrapper>();
 
-        // public class StateWrapper
-        // {
-        //     public float axis;
-        //     public bool isUp;
-        //     public bool isDown;
-        //     public bool isPressed;
-        //     public uint lastCanceledInUpdate;
-        // };
-        //
-        // public static IDictionary<string, StateWrapper> axes = new Dictionary<string, StateWrapper>();
-
         public static float GetAxis(string name)
         {
             return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.action.ReadValue<float>() : 0.0f;
@@ -92,10 +83,23 @@ namespace UnityEngine.InputSystem.Utilities
                 // "joystick 1 button 0" format
 
                 var parts = name.Split(' ');
-                if (parts.Length < 3 || parts[0] != "joystick")
+                if (parts.Length < 3 || parts[0] != "joystick" || parts[2] != "button")
                     return null;
 
-                return $"<Gamepad>/b"; // TODO
+                var joyNum = Int32.Parse(parts[1]);
+                var button = Int32.Parse(parts[3]);
+
+                // a very rough mapping based on http://wiki.unity3d.com/index.php?title=Xbox360Controller
+                // TODO where joyNum goes?
+                switch (button)
+                {
+                    case 0: return $"<Gamepad>/buttonSouth";
+                    case 1: return $"<Gamepad>/buttonEast";
+                    case 2: return $"<Gamepad>/buttonWest";
+                    case 3: return $"<Gamepad>/buttonNorth";
+                }
+
+                throw new NotImplementedException($"not supported joystick '{name}'");
             }
             else if (remapDict.TryGetValue(name, out string remap))
                 return remap;
@@ -152,12 +156,10 @@ namespace UnityEngine.InputSystem.Utilities
                 case 1: // mouse
                     throw new NotImplementedException("Mouse axes are not supported");
                 case 2: // joystick
+                    Debug.Log($"joystick {joyNum} axis {axisValue}");
+                    // TODO completely not clear how to combine/split two axes with a 2d controller?
                     break;
             }
-
-
-            //buttons["Fire1"] = new ActionWrapper(new InputAction("Fire1", binding: "<Gamepad>/b"));
-            //buttons["Fire1"].action.AddBinding("<Keyboard>/space");
 
             // * m_Name
             // * negativeButton
@@ -179,13 +181,6 @@ namespace UnityEngine.InputSystem.Utilities
             //     kAxisMouse,
             //     kAxisJoystick,
             // };
-
-
-            // var b = a.FindPropertyRelative("negativeButton");
-            // Debug.Log($"type={b.propertyType}, name={b.name}, value={b.stringValue}");
-
-            //foreach (SerializedProperty b in a)
-            //    Debug.Log($"type={b.propertyType}, name={b.name}");
         }
 
         public static void BootstrapInputConfiguration()

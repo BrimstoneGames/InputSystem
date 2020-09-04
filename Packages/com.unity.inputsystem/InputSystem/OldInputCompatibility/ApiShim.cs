@@ -468,6 +468,7 @@ namespace UnityEngine
             return false;
         }
 
+        // TODO probably better to have a general OldInputCompatibilityProvider interface or something
         public static Func<string, float> GetAxisCallback;
         public static Func<string, bool> GetButtonCallback;
         public static Func<string, bool> GetButtonDownCallback;
