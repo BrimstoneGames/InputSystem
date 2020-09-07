@@ -438,6 +438,16 @@ namespace UnityEngine
 
     public class Input
     {
+        public abstract class DataProvider
+        {
+            public abstract float GetAxis(string name);
+            public abstract bool GetButton(string name);
+            public abstract bool GetButtonDown(string name);
+            public abstract bool GetButtonUp(string name);
+        };
+
+        public static DataProvider provider;
+
         private static bool GetKeyInt(KeyCode key)
         {
             return false;
@@ -468,35 +478,29 @@ namespace UnityEngine
             return false;
         }
 
-        // TODO probably better to have a general OldInputCompatibilityProvider interface or something
-        public static Func<string, float> GetAxisCallback;
-        public static Func<string, bool> GetButtonCallback;
-        public static Func<string, bool> GetButtonDownCallback;
-        public static Func<string, bool> GetButtonUpCallback;
-
         public static float GetAxis(string axisName)
         {
-            return GetAxisCallback(axisName);
+            return provider?.GetAxis(axisName) ?? 0.0f;
         }
 
         public static float GetAxisRaw(string axisName)
         {
-            return GetAxisCallback(axisName);
+            return GetAxis(axisName);
         }
 
         public static bool GetButton(string buttonName)
         {
-            return GetButtonCallback(buttonName);
+            return provider?.GetButton(buttonName) ?? false;
         }
 
         public static bool GetButtonDown(string buttonName)
         {
-            return GetButtonDownCallback(buttonName);
+            return provider?.GetButtonDown(buttonName) ?? false;
         }
 
         public static bool GetButtonUp(string buttonName)
         {
-            return GetButtonUpCallback(buttonName);
+            return provider?.GetButtonUp(buttonName) ?? false;
         }
 
         public static bool GetMouseButton(int button)

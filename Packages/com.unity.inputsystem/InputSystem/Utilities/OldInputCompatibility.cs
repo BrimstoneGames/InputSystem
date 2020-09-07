@@ -53,25 +53,28 @@ namespace UnityEngine.InputSystem.Utilities
 
         private static IDictionary<string, ActionWrapper> axes = new Dictionary<string, ActionWrapper>();
 
-        public static float GetAxis(string name)
+        private class DataProvider : Input.DataProvider
         {
-            return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.action.ReadValue<float>() : 0.0f;
-        }
+            public override float GetAxis(string name)
+            {
+                return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.action.ReadValue<float>() : 0.0f;
+            }
 
-        public static bool GetButton(string name)
-        {
-            return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.isPressed : false;
-        }
+            public override bool GetButton(string name)
+            {
+                return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.isPressed : false;
+            }
 
-        public static bool GetButtonDown(string name)
-        {
-            return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.action.triggered : false;
-        }
+            public override bool GetButtonDown(string name)
+            {
+                return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.action.triggered : false;
+            }
 
-        public static bool GetButtonUp(string name)
-        {
-            return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.cancelled : false;
-        }
+            public override bool GetButtonUp(string name)
+            {
+                return axes.TryGetValue(name, out ActionWrapper wrapper) ? wrapper.cancelled : false;
+            }
+        };
 
         private static string RemapButtons(string name)
         {
@@ -212,10 +215,7 @@ namespace UnityEngine.InputSystem.Utilities
             foreach (SerializedProperty axisSettings in axesSetting)
                 ConsumeInputManagerAxisSettings(axisSettings);
 
-            Input.GetAxisCallback = GetAxis;
-            Input.GetButtonCallback = GetButton;
-            Input.GetButtonDownCallback = GetButtonDown;
-            Input.GetButtonUpCallback = GetButtonUp;
+            Input.provider = new DataProvider();
         }
 
         public static void Enable()
