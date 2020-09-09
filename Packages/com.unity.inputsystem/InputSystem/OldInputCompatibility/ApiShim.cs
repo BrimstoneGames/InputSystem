@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -673,6 +674,20 @@ namespace UnityEngine
                     events[q] = GetAccelerationEvent(q);
                 return events;
             }
+        }
+    }
+
+    // required by native side when using old input manager
+    internal class SendMouseEvents
+    {
+        [RequiredByNativeCode]
+        static void SetMouseMoved()
+        {
+        }
+
+        [RequiredByNativeCode]
+        static void DoSendMouseEvents(int skipRTCameras)
+        {
         }
     }
 }
