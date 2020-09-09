@@ -1,7 +1,8 @@
 {
     "name": "Unity.InputSystem",
     "references": [
-        "Unity.ugui"
+        "Unity.ugui",
+        "UnityEngine.InputLegacyModule"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
