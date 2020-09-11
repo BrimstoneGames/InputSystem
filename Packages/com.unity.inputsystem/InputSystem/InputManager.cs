@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using InputSystem.OldInputCompatibility;
 using Unity.Collections;
 using UnityEngine.InputSystem.Composites;
 using UnityEngine.InputSystem.Controls;
